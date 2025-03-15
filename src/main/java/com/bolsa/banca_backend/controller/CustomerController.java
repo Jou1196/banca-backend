@@ -3,6 +3,7 @@ package com.bolsa.banca_backend.controller;
 
 import com.bolsa.banca_backend.entity.Customer;
 import com.bolsa.banca_backend.service.ICustomerService;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ public class CustomerController {
 
 
     @PostMapping
-    public Customer createCustomer(@RequestBody Customer customer) {
+    public Customer createCustomer( @NotBlank  @RequestBody Customer customer) {
         return customerService.createCustomer(customer);
     }
 
@@ -30,7 +31,7 @@ public class CustomerController {
      * @return
      */
     @GetMapping("/{id}")
-    public Customer getCustomer(@PathVariable Long id) {
+    public Customer getCustomer( @NotBlank @PathVariable Long id) {
         return customerService.getCustomer(id);
     }
 
@@ -41,7 +42,7 @@ public class CustomerController {
      * @return
      */
     @PutMapping("/{id}")
-    public Customer updateCustomer(@PathVariable Long id, @RequestBody Customer customer) {
+    public Customer updateCustomer(@NotBlank @PathVariable Long id,@NotBlank  @RequestBody Customer customer) {
         return customerService.updateCustomer(id, customer);
     }
 
@@ -51,7 +52,7 @@ public class CustomerController {
      */
 
     @DeleteMapping("/{id}")
-    public void deleteCustomer(@PathVariable Long id) {
+    public void deleteCustomer(@NotBlank @PathVariable Long id) {
         customerService.deleteCustomer(id);
     }
 }

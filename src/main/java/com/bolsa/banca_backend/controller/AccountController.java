@@ -4,6 +4,8 @@ package com.bolsa.banca_backend.controller;
 import com.bolsa.banca_backend.dto.AccountDto;
 import com.bolsa.banca_backend.entity.Account;
 import com.bolsa.banca_backend.service.impl.AccountServiceImpl;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +25,7 @@ public class AccountController {
      * @return
      */
     @PostMapping
-    public ResponseEntity<String> createAccount(@RequestBody AccountDto accountDto) {
+    public ResponseEntity<String> createAccount( @NotNull @RequestBody AccountDto accountDto) {
         accountService.createAccount(accountDto);
         return ResponseEntity.ok("Cuenta creada con éxito");
     }
@@ -34,7 +36,7 @@ public class AccountController {
      * @return
      */
     @GetMapping("/{id}")
-    public Account getAccount(@PathVariable Long id) {
+    public Account getAccount( @NotBlank  @PathVariable Long id) {
         return accountService.getAccount(id);
     }
 
@@ -45,7 +47,7 @@ public class AccountController {
      * @return
      */
     @PutMapping("/{id}")
-    public Account updateAccount(@PathVariable Long id, @RequestBody Account account) {
+    public Account updateAccount( @NotBlank @PathVariable Long id, @NotBlank  @RequestBody Account account) {
         return accountService.updateAccount(id, account);
     }
 
@@ -54,7 +56,7 @@ public class AccountController {
      * @param id
      */
     @DeleteMapping("/{id}")
-    public void deleteAccount(@PathVariable Long id) {
+    public void deleteAccount(@NotBlank @PathVariable Long id) {
         accountService.deleteAccount(id);
     }
 }

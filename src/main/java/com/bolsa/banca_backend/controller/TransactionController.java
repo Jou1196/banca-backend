@@ -4,6 +4,7 @@ import com.bolsa.banca_backend.dto.AccountReportDto;
 import com.bolsa.banca_backend.dto.TransactionDto;
 import com.bolsa.banca_backend.entity.Transaction;
 import com.bolsa.banca_backend.service.ITransactionService;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class TransactionController {
      * @return
      */
     @PostMapping("/withdrawal")
-    public ResponseEntity<String> makeWithdrawal(@RequestBody TransactionDto request) {
+    public ResponseEntity<String> makeWithdrawal(@NotBlank  @RequestBody TransactionDto request) {
         String result = transactionService.makeWithdrawal(request.getAccountId(), request.getAmount());
         return ResponseEntity.ok(result);
     }
@@ -38,7 +39,7 @@ public class TransactionController {
      * @return
      */
     @PostMapping("/deposit")
-    public Transaction makeDeposit(@RequestParam Long accountId, @RequestParam Double amount) {
+    public Transaction makeDeposit(@NotBlank @RequestParam Long accountId,@NotBlank  @RequestParam Double amount) {
         return transactionService.makeDeposit(accountId, amount);
     }
 
