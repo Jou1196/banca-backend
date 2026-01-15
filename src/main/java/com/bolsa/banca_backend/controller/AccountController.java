@@ -1,62 +1,46 @@
 package com.bolsa.banca_backend.controller;
 
 
-import com.bolsa.banca_backend.dto.AccountDto;
-import com.bolsa.banca_backend.entity.Account;
-import com.bolsa.banca_backend.service.impl.AccountServiceImpl;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+
+
+import com.bolsa.banca_backend.dto.AccountCreateRequest;
+import com.bolsa.banca_backend.dto.AccountResponse;
+import com.bolsa.banca_backend.service.IAccountService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * Class AccountController
- */
+import java.util.List;
+import java.util.UUID;
+
 @RestController
-@RequestMapping("/api/accounts")
+@RequestMapping("/accounts")
+@RequiredArgsConstructor
 public class AccountController {
-    @Autowired
-    private AccountServiceImpl accountService;
 
-    /**
-     *
-     * @param accountDto
-     * @return
-     */
+    private final IAccountService service;
+
     @PostMapping
-    public ResponseEntity<String> createAccount( @NotNull @RequestBody AccountDto accountDto) {
-        accountService.createAccount(accountDto);
-        return ResponseEntity.ok("Cuenta creada con éxito");
+    public AccountResponse create(@RequestBody @Valid AccountCreateRequest req) {
+        return service.create(req);
     }
 
-    /**
-     *
-     * @param id
-     * @return
-     */
+    @GetMapping
+    public List<AccountResponse> findAll(@RequestParam(value = "customerId", required = false) UUID customerId) {
+        if (customerId != null) {
+            return service.findByCustomerId(customerId);
+        }
+        return service.findAll();
+    }
+
     @GetMapping("/{id}")
-    public Account getAccount( @NotBlank  @PathVariable Long id) {
-        return accountService.getAccount(id);
+    public AccountResponse findById(@PathVariable UUID id) {
+        return service.findById(id);
     }
 
-    /**
-     *
-     * @param id
-     * @param account
-     * @return
-     */
-    @PutMapping("/{id}")
-    public Account updateAccount( @NotBlank @PathVariable Long id, @NotBlank  @RequestBody Account account) {
-        return accountService.updateAccount(id, account);
-    }
-
-    /**
-     *
-     * @param id
-     */
     @DeleteMapping("/{id}")
-    public void deleteAccount(@NotBlank @PathVariable Long id) {
-        accountService.deleteAccount(id);
+    public void delete(@PathVariable UUID id) {
+        service.delete(id);
     }
 }
+

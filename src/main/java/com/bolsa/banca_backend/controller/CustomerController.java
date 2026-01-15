@@ -1,58 +1,49 @@
 package com.bolsa.banca_backend.controller;
 
 
-import com.bolsa.banca_backend.entity.Customer;
-import com.bolsa.banca_backend.service.ICustomerService;
-import jakarta.validation.constraints.NotBlank;
-import org.springframework.beans.factory.annotation.Autowired;
 
+
+import com.bolsa.banca_backend.dto.CustomerCreateRequest;
+import com.bolsa.banca_backend.dto.CustomerResponse;
+import com.bolsa.banca_backend.dto.CustomerUpdateRequest;
+import com.bolsa.banca_backend.service.ICustomerService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * Class CustomerController
- */
+import java.util.List;
+import java.util.UUID;
+
 @RestController
-@RequestMapping("/api/customers")
+@RequestMapping("/customers")
+@RequiredArgsConstructor
 public class CustomerController {
 
-    @Autowired
-    ICustomerService customerService;
-
+    private final ICustomerService service;
 
     @PostMapping
-    public Customer createCustomer( @NotBlank  @RequestBody Customer customer) {
-        return customerService.createCustomer(customer);
+    public CustomerResponse create(@RequestBody @Valid CustomerCreateRequest req) {
+        return service.create(req);
     }
 
+    @GetMapping
+    public List<CustomerResponse> findAll() {
+        return service.findAll();
+    }
 
-    /**
-     *
-     * @param id
-     * @return
-     */
     @GetMapping("/{id}")
-    public Customer getCustomer( @NotBlank @PathVariable Long id) {
-        return customerService.getCustomer(id);
+    public CustomerResponse findById(@PathVariable UUID id) {
+        return service.findById(id);
     }
 
-    /**
-     *
-     * @param id
-     * @param customer
-     * @return
-     */
     @PutMapping("/{id}")
-    public Customer updateCustomer(@NotBlank @PathVariable Long id,@NotBlank  @RequestBody Customer customer) {
-        return customerService.updateCustomer(id, customer);
+    public CustomerResponse update(@PathVariable UUID id, @RequestBody @Valid CustomerUpdateRequest req) {
+        return service.update(id, req);
     }
-
-    /**
-     *
-     * @param id
-     */
 
     @DeleteMapping("/{id}")
-    public void deleteCustomer(@NotBlank @PathVariable Long id) {
-        customerService.deleteCustomer(id);
+    public void delete(@PathVariable UUID id) {
+        service.delete(id);
     }
 }
+

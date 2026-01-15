@@ -1,43 +1,40 @@
 package com.bolsa.banca_backend.entity;
 
-
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
-@Table(name = "customer")
-/**
- * Class Customer
- */
-public class Customer {
+@Table(
+        name = "customer",
+        indexes = {
+                @Index(name = "idx_customer_code", columnList = "customer_code"),
+                @Index(name = "idx_customer_identification", columnList = "identification")
+        }
+)
+public class Customer extends Person {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idCustomer")
-    private Long idCustomer;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", nullable = false)
+    private UUID id;
 
-    @Column(name = "fullName")
-    private String fullName;
+    @Column(name = "customer_code", nullable = false, unique = true, length = 50)
+    private String customerCode;
 
-    @Column(name = "address")
-    private String address;
-
-    @Column(name = "phone")
-    private String phone;
-    @Column(name = "password")
+    @Column(name = "password", nullable = false, length = 100)
     private String password;
-    @Column(name = "status")
-    private String status;
 
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
-    private List<Account> accounts;
+    @Column(name = "active", nullable = false)
+    private Boolean active = true;
 
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Account> accounts = new ArrayList<>();
 }
+

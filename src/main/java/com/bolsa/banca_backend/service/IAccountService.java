@@ -1,37 +1,19 @@
 package com.bolsa.banca_backend.service;
 
-import com.bolsa.banca_backend.dto.AccountDto;
-import com.bolsa.banca_backend.entity.Account;
+import com.bolsa.banca_backend.dto.AccountCreateRequest;
+import com.bolsa.banca_backend.dto.AccountResponse;
+
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Interface IAccountService
  */
 public interface IAccountService {
-    /**
-     *
-     * @param accountDto
-     * @return
-     */
-    public Account createAccount(AccountDto accountDto);
-
-    /**
-     *
-     * @param id
-     * @return
-     */
-    public Account getAccount(Long id);
-
-    /**
-     *
-     * @param id
-     * @param account
-     * @return
-     */
-    public Account updateAccount(Long id, Account account);
-
-    /**
-     *
-     * @param id
-     */
-    public void deleteAccount(Long id);
+    AccountResponse create(AccountCreateRequest req);
+    List<AccountResponse> findAll();
+    List<AccountResponse> findByCustomerId(UUID customerId);
+    AccountResponse findById(UUID id);
+    void delete(UUID id);
 }

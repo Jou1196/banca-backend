@@ -1,38 +1,48 @@
 package com.bolsa.banca_backend.entity;
 
-
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-@Entity
-@Table(name = "account")
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-/**
- * Class Account
- */
+@Entity
+@Table(
+        name = "accounts",
+        indexes = {
+                @Index(name = "idx_accounts_account_number", columnList = "account_number"),
+                @Index(name = "idx_accounts_customer_id", columnList = "customer_id")
+        }
+)
 public class Account {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idAccount;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", nullable = false)
+    private UUID id;
 
-    private String accountType;
-    private Double balance;
+    @Column(name = "account_number", nullable = false, unique = true, length = 20)
+    private String accountNumber;
 
-    @ManyToOne
-    @JoinColumn(name = "id_custumer")
+    @Column(name = "account_type", nullable = false, length = 20)
+    private String accountType; // SAVINGS / CHECKING
+
+    @Column(name = "initial_balance", nullable = false, precision = 18, scale = 2)
+    private BigDecimal initialBalance;
+
+    @Column(name = "active", nullable = false)
+    private Boolean active = true;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-
-    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Transaction> transactions = new ArrayList<>();
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Movement> movements = new ArrayList<>();
 }
+
