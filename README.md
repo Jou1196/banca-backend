@@ -1,74 +1,97 @@
+# 🧠 Banca Backend – Spring Boot
 
-
- Observar la documentacion de los servicios rest en http://localhost:8080/swagger-ui/index.html para visualizar de mejor manera los endpoinst se agrego swwagger
-
-
-# 💻 Angular CRM – Frontend
-
-Frontend del sistema de banca desarrollado en Angular, encargado de la visualización de clientes, cuentas, movimientos y generación de reportes en PDF, consumiendo un backend en Spring Boot.
+Backend del sistema de banca encargado de la gestión de clientes, cuentas, movimientos y generación de reportes en PDF.  
+Expone APIs REST documentadas con Swagger/OpenAPI y es consumido por el frontend Angular.
 
 ## 🚀 Tecnologías
-Angular 18 · TypeScript · PrimeNG · RxJS · SCSS · Jest
+Java 17 · Spring Boot 3 · Spring Web · Spring Data JPA · Lombok  
+OpenAPI / Swagger · iText / PDF · Docker · Maven
 
 ## 📁 Estructura
-angular-crm/
-src/app/pages/customers  
-src/app/pages/accounts  
-src/app/pages/movements  
-src/app/pages/reports  
-src/app/services  
+banca-backend/
+src/main/java/com/bolsa/banca_backend
+├── controller
+├── service
+├── repository
+├── dto
+├── entity
+└── config
 
 ## ▶️ Requisitos
-Node.js 18+ · Angular CLI
+Java 17  
+Maven 3.9+  
+Docker (opcional)
 
-## ▶️ Instalación
-npm install
+## ▶️ Ejecución local
+mvn clean install  
+mvn spring-boot:run
 
-## ▶️ Ejecución
-ng serve  
-http://localhost:4200
-
-## 🔗 Backend
-El frontend consume APIs desde:  
+Aplicación:
 http://localhost:8080
 
-Ejemplo:
-GET /reports?customerId={uuid}&from=yyyy-MM-dd&to=yyyy-MM-dd
+## 📘 Swagger / OpenAPI
+Documentación automática de las APIs:
 
-## 📄 Funcionalidades
-Customers: listado, búsqueda, navegación a cuentas y reportes  
-Accounts: listado de cuentas por cliente  
-Movements: movimientos por cuenta  
-Reports: selección de fechas, generación y descarga de PDF, botón regresar
+http://localhost:8080/swagger-ui.html  
+o  
+http://localhost:8080/swagger-ui/index.html
 
-## 🧪 Tests
-Tests básicos con Jest:
-npm run test:jest
+## 🔗 Endpoints principales
 
-Componentes cubiertos:
-Customers · Accounts · Movements · Reports
+### Customers
+GET /customers  
+Obtiene el listado de clientes.
 
-## 🎨 UI
-PrimeNG, diseño responsivo, SCSS modular, Toast para mensajes, botones de navegación claros.
+### Accounts
+GET /accounts?customerId={uuid}  
+Obtiene las cuentas de un cliente.
 
-## 🐳 Docker (opcional)
-FROM node:18-alpine  
+### Movements
+GET /movements?accountId={uuid}  
+Obtiene los movimientos de una cuenta.
+
+### Reports
+GET /reports?customerId={uuid}&from=yyyy-MM-dd&to=yyyy-MM-dd  
+Genera el reporte de un cliente en un rango de fechas.
+
+## 📄 Reportes PDF
+El backend genera reportes PDF con:
+- Datos del cliente
+- Cuentas asociadas
+- Movimientos por rango de fechas
+- Totales y formato legible
+
+El frontend descarga el PDF directamente.
+
+## 🧪 Manejo de errores
+Respuestas consistentes con:
+- 400: parámetros inválidos
+- 404: cliente / datos no encontrados
+- 500: error interno
+
+## 🐳 Docker
+
+### Dockerfile
+FROM eclipse-temurin:17-jdk-alpine  
 WORKDIR /app  
-COPY . .  
-RUN npm install  
-RUN npm run build  
-EXPOSE 4200  
-CMD ["npm","run","start"]
+COPY target/*.jar app.jar  
+EXPOSE 8080  
+ENTRYPOINT ["java","-jar","/app/app.jar"]
 
-Build:
-docker build -t angular-crm .
+### Build
+mvn clean package  
+docker build -t banca-backend .
 
-Run:
-docker run -p 4200:4200 angular-crm
+### Run
+docker run -p 8080:8080 banca-backend
+
+## 🔐 CORS
+Configurado para permitir consumo desde:
+http://localhost:4200
 
 ## ✅ Estado
-Frontend funcional, integrado con backend, reportes PDF operativos y tests mínimos configurados.
+Backend funcional, APIs documentadas con Swagger, generación de PDFs operativa, integración completa con frontend Angular.
 
 ## 👨‍💻 Autor
-Angular CRM – Frontend  
+Banca Backend – Spring Boot  
 Sistema de Banca
