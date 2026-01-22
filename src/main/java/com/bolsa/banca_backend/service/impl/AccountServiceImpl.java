@@ -1,80 +1,116 @@
 package com.bolsa.banca_backend.service.impl;
 
 import com.bolsa.banca_backend.dto.AccountCreateRequest;
+import com.bolsa.banca_backend.dto.AccountDetailDto;
+import com.bolsa.banca_backend.dto.AccountDto;
 import com.bolsa.banca_backend.dto.AccountResponse;
 import com.bolsa.banca_backend.entity.Account;
 import com.bolsa.banca_backend.entity.Customer;
+
 import com.bolsa.banca_backend.repository.IAccountRepository;
 import com.bolsa.banca_backend.repository.ICustomerRepository;
 import com.bolsa.banca_backend.service.IAccountService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AccountServiceImpl implements IAccountService {
 
-    private final IAccountRepository accountRepository;
-    private final ICustomerRepository customerRepository;
+    private final IAccountRepository accountRepo;
+    private final ICustomerRepository customerRepo;
 
     @Override
     public AccountResponse create(AccountCreateRequest req) {
+        Customer customer = customerRepo.findById(req.getCustomerId())
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado: " + req.getCustomerId()));
 
-        if (accountRepository.existsByAccountNumber(req.accountNumber())) {
-            throw new IllegalArgumentException("Account number already exists");
-        }
+        BigDecimal initial = req.getInitialBalance() != null ? req.getInitialBalance() : BigDecimal.ZERO;
 
-        Customer customer = customerRepository.findById(req.customerId())
-                .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+        Account account = Account.builder()
+                .accountNumber(req.getAccountNumber())
+                .type(req.getType())
+                .initialBalance(initial)
+                .balance(initial)
+                .status(req.getStatus() != null ? req.getStatus() : Boolean.TRUE)
+                .customer(customer)
+                .build();
 
-        Account a = new Account();
-        a.setCustomer(customer);
-        a.setAccountNumber(req.accountNumber());
-        a.setAccountType(req.accountType());
-        a.setInitialBalance(req.initialBalance());
-        a.setActive(req.active());
-
-        Account saved = accountRepository.save(a);
-        return toResponse(saved);
+        return toAccountResponse(accountRepo.save(account));
     }
 
     @Override
-    public List<AccountResponse> findAll() {
-        return accountRepository.findAll().stream().map(this::toResponse).toList();
+    @Transactional(readOnly = true)
+    public AccountDetailDto getById(UUID id) {
+        Account a = accountRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Cuenta no encontrada: " + id));
+        return toAccountDetailDto(a);
     }
 
     @Override
-    public List<AccountResponse> findByCustomerId(UUID customerId) {
-        return accountRepository.findByCustomerId(customerId).stream().map(this::toResponse).toList();
+    @Transactional(readOnly = true)
+    public List<AccountDto> getAll() {
+        return accountRepo.findAll().stream().map(this::toAccountDto).toList();
     }
 
     @Override
-    public AccountResponse findById(UUID id) {
-        Account a = accountRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-        return toResponse(a);
+    @Transactional(readOnly = true)
+    public List<AccountDto> getByCustomer(UUID customerId) {
+        return accountRepo.findByCustomerId(customerId).stream().map(this::toAccountDto).toList();
     }
 
     @Override
     public void delete(UUID id) {
-        if (!accountRepository.existsById(id)) {
-            throw new IllegalArgumentException("Account not found");
+        if (!accountRepo.existsById(id)) {
+            throw new EntityNotFoundException("Cuenta no encontrada: " + id);
         }
-        accountRepository.deleteById(id);
+        accountRepo.deleteById(id);
     }
 
-    private AccountResponse toResponse(Account a) {
-        return new AccountResponse(
-                a.getId(),
-                a.getAccountNumber(),
-                a.getAccountType(),
-                a.getInitialBalance(),
-                Boolean.TRUE.equals(a.getActive()),
-                a.getCustomer().getId()
-        );
+
+    private AccountDto toAccountDto(Account a) {
+        AccountDto dto = new AccountDto();
+        dto.setId(a.getId());
+        dto.setAccountNumber(a.getAccountNumber());
+        dto.setType(a.getType());
+        dto.setBalance(a.getBalance());
+        dto.setStatus(a.getStatus());
+        dto.setCustomerId(a.getCustomer().getId());
+        return dto;
+    }
+
+    private AccountDetailDto toAccountDetailDto(Account a) {
+        AccountDetailDto dto = new AccountDetailDto();
+        dto.setId(a.getId());
+        dto.setAccountNumber(a.getAccountNumber());
+        dto.setType(a.getType());
+        dto.setBalance(a.getBalance());
+        dto.setStatus(a.getStatus());
+        dto.setCustomerId(a.getCustomer().getId());
+        dto.setCustomerFullName(a.getCustomer().getFullName());              // ✅ CORRECTO
+        dto.setCustomerIdentification(a.getCustomer().getIdentification());  // ✅ CORRECTO
+        return dto;
+    }
+
+    private AccountResponse toAccountResponse(Account a) {
+        AccountResponse resp = new AccountResponse();
+        resp.setId(a.getId());
+        resp.setAccountNumber(a.getAccountNumber());
+        resp.setType(a.getType());
+        resp.setBalance(a.getBalance());
+        resp.setStatus(a.getStatus());
+        resp.setCustomerId(a.getCustomer().getId());
+        return resp;
     }
 }
+
+
+
 

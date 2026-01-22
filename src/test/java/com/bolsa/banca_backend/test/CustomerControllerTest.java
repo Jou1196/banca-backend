@@ -1,6 +1,7 @@
 package com.bolsa.banca_backend.test;
 
 import com.bolsa.banca_backend.controller.CustomerController;
+import com.bolsa.banca_backend.dto.CustomerCreateRequest;
 import com.bolsa.banca_backend.dto.CustomerResponse;
 import com.bolsa.banca_backend.service.ICustomerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,41 +45,33 @@ class CustomerControllerTest {
 
         UUID id = UUID.randomUUID();
 
-        CustomerResponse response = new CustomerResponse(
-                id,
-                "john.doe",
-                true,
-                "John Doe",
-                "Male",
-                30,
-                "0102030405",
-                "Main Street",
-                "0999999999"
-        );
+        // Ajusta este constructor/setters EXACTO a tu CustomerResponse real.
+        // Si tu CustomerResponse tiene Lombok @Data, puedes usar setters.
+        CustomerResponse response = new CustomerResponse();
+        response.setId(id);
+        response.setFullName("Jose Lema");
+        response.setIdentification("0102030405");
+        response.setAddress("Otavalo sn y principal");
+        response.setPhone("098254785");
+        response.setStatus(true);
 
-        when(customerService.create(any())).thenReturn(response);
+        when(customerService.create(any(CustomerCreateRequest.class))).thenReturn(response);
 
-        String body = """
-        {
-          "customerCode": "john.doe",
-          "password": "1234",
-          "active": true,
-          "name": "John Doe",
-          "gender": "Male",
-          "age": 30,
-          "identification": "0102030405",
-          "address": "Main Street",
-          "phone": "0999999999"
-        }
-        """;
+        CustomerCreateRequest req = new CustomerCreateRequest();
+        req.setFullName("Jose Lema");
+        req.setIdentification("0102030405");
+        req.setAddress("Otavalo sn y principal");
+        req.setPhone("098254785");
+        req.setPassword("1234");
+        req.setStatus(true);
 
-        mockMvc.perform(post("/customers")
+        mockMvc.perform(post("/api/clientes")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isOk())
+                        .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(id.toString()))
-                .andExpect(jsonPath("$.customerCode").value("john.doe"))
-                .andExpect(jsonPath("$.name").value("John Doe"))
-                .andExpect(jsonPath("$.active").value(true));
+                .andExpect(jsonPath("$.fullName").value("Jose Lema"))
+                .andExpect(jsonPath("$.identification").value("0102030405"))
+                .andExpect(jsonPath("$.status").value(true));
     }
 }

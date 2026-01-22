@@ -1,22 +1,17 @@
 package com.bolsa.banca_backend.dto;
 
-import lombok.AllArgsConstructor;
+
+import com.bolsa.banca_backend.utils.AccountType;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+
+import java.math.BigDecimal;
+
 
 
 
 @Data
-@AllArgsConstructor
-@Getter
-@Setter
-/**
- * Class AccountReportDto
- */
 public class AccountReportDto {
-    private Long idAccount;
-    private String accountType;
-    private Double balance;
-
+    private String accountNumber;
+    private AccountType type;
+    private BigDecimal balance;
 }

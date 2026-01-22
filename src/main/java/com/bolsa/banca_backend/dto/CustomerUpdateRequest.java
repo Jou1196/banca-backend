@@ -1,17 +1,15 @@
 package com.bolsa.banca_backend.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 
-public record CustomerUpdateRequest(
-        @NotBlank String password,
-        @NotNull Boolean active,
+@Data
+public class CustomerUpdateRequest {
+    private String fullName;
+    private String identification;
+    private String address;
+    private String phone;
+    private String password;
+    private Boolean status;
+}
 
-        @NotBlank String name,
-        String gender,
-        Integer age,
-        String identification,
-        String address,
-        String phone
-) {}
 

@@ -1,16 +1,18 @@
 package com.bolsa.banca_backend.dto;
 
 
-import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
-/**
- * Class AccountDto
- */
+import com.bolsa.banca_backend.utils.AccountType;
+import lombok.Data;
+import java.math.BigDecimal;
+import java.util.UUID;
+
+@Data
 public class AccountDto {
-    private String accountType;
-    private Double balance;
-    private Long customerId;
+    private UUID id;
+    private String accountNumber;
+    private AccountType type;
+    private BigDecimal balance;
+    private Boolean status;
+    private UUID customerId;
 }

@@ -5,6 +5,9 @@ import com.bolsa.banca_backend.dto.ReportResponse;
 import java.time.LocalDate;
 import java.util.UUID;
 
+/**
+ * Interface IReportService
+ */
 public interface IReportService {
-    ReportResponse getCustomerReport(UUID customerId, LocalDate from, LocalDate to);
+    ReportResponse statusAccount(UUID customerId, LocalDate from, LocalDate to);
 }

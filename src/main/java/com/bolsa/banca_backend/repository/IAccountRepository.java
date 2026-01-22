@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IAccountRepository extends JpaRepository<Account, UUID> {
-    List<Account> findByCustomerId(UUID customerId);
-    boolean existsByAccountNumber(String accountNumber);
 
+
+    List<Account> findByCustomerId(UUID customerId);
 }
 

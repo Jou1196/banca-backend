@@ -1,16 +1,16 @@
 package com.bolsa.banca_backend.dto;
 
+import lombok.Data;
+
 import java.util.UUID;
 
-public record CustomerResponse(
-        UUID id,
-        String customerCode,
-        boolean active,
-        String name,
-        String gender,
-        Integer age,
-        String identification,
-        String address,
-        String phone
-) {}
+@Data
+public class CustomerResponse {
+    private UUID id;
+    private String fullName;
+    private String identification;
+    private String address;
+    private String phone;
+    private Boolean status;
+}
 

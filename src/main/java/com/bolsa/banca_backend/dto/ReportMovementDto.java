@@ -1,14 +1,24 @@
 package com.bolsa.banca_backend.dto;
 
-import com.bolsa.banca_backend.utils.MovementType;
+import com.bolsa.banca_backend.utils.AccountType;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public record ReportMovementDto(
-        LocalDate date,
-        MovementType type,
-        BigDecimal amount,
-        BigDecimal availableBalance
-) {}
+
+import lombok.Data;
+
+@Data
+public class ReportMovementDto {
+
+    private LocalDate fecha;
+    private String cliente;
+    private String numeroCuenta;
+    private AccountType tipo;
+    private BigDecimal saldoInicial;
+    private Boolean estado;
+    private BigDecimal movimiento;
+    private BigDecimal saldoDisponible;
+}
 

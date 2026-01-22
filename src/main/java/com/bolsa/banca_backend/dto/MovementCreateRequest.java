@@ -1,14 +1,26 @@
 package com.bolsa.banca_backend.dto;
 
 import com.bolsa.banca_backend.utils.MovementType;
-import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.UUID;
 
-public record MovementCreateRequest(
-        @NotNull UUID accountId,
-        @NotNull LocalDate movementDate,
-        @NotNull MovementType movementType,
-        @NotNull BigDecimal amount
-) {}
+
+
+import jakarta.validation.constraints.*;
+
+
+@Data
+public class MovementCreateRequest {
+
+    @NotNull(message = "accountId es requerido")
+    private UUID accountId;
+
+    @NotNull(message = "amount es requerido")
+    @DecimalMin(value = "0.01", message = "amount debe ser mayor a 0")
+    private BigDecimal amount;
+
+    @NotNull(message = "type es requerido")
+    private MovementType type;
+}
+

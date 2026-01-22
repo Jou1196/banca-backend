@@ -1,96 +1,102 @@
 package com.bolsa.banca_backend.service.impl;
 
+
 import com.bolsa.banca_backend.dto.CustomerCreateRequest;
+import com.bolsa.banca_backend.dto.CustomerDto;
 import com.bolsa.banca_backend.dto.CustomerResponse;
 import com.bolsa.banca_backend.dto.CustomerUpdateRequest;
 import com.bolsa.banca_backend.entity.Customer;
 import com.bolsa.banca_backend.repository.ICustomerRepository;
 import com.bolsa.banca_backend.service.ICustomerService;
+import jakarta.persistence.EntityNotFoundException;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CustomerServiceImpl implements ICustomerService {
 
-    private final ICustomerRepository repository;
+    private final ICustomerRepository customerRepo;
 
     @Override
     public CustomerResponse create(CustomerCreateRequest req) {
+        Customer customer = Customer.builder()
+                .fullName(req.getFullName())
+                .identification(req.getIdentification())
+                .address(req.getAddress())
+                .phone(req.getPhone())
+                .password(req.getPassword())
+                .status(req.getStatus() != null ? req.getStatus() : Boolean.TRUE)
+                .build();
 
-
-        if (repository.existsByCustomerCode(req.customerCode())) {
-            throw new IllegalArgumentException("Customer ya existe");
-        }
-
-        Customer c = new Customer();
-        c.setCustomerCode(req.customerCode());
-        c.setPassword(req.password());
-        c.setActive(req.active());
-
-        c.setName(req.name());
-        c.setGender(req.gender());
-        c.setAge(req.age());
-        c.setIdentification(req.identification());
-        c.setAddress(req.address());
-        c.setPhone(req.phone());
-
-        Customer saved = repository.save(c);
-        return toResponse(saved);
-    }
-
-    @Override
-    public List<CustomerResponse> findAll() {
-        return repository.findAll().stream().map(this::toResponse).toList();
-    }
-
-    @Override
-    public CustomerResponse findById(UUID id) {
-        Customer c = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Customer no encontrado"));
-        return toResponse(c);
+        Customer saved = customerRepo.save(customer);
+        return toCustomerResponse(saved);
     }
 
     @Override
     public CustomerResponse update(UUID id, CustomerUpdateRequest req) {
-        Customer c = repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Customer no encontrado"));
+        Customer customer = customerRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado: " + id));
 
-        c.setPassword(req.password());
-        c.setActive(req.active());
+        customer.setFullName(req.getFullName());
+        customer.setIdentification(req.getIdentification());
+        customer.setAddress(req.getAddress());
+        customer.setPhone(req.getPhone());
+        customer.setPassword(req.getPassword());
+        customer.setStatus(req.getStatus());
 
-        c.setName(req.name());
-        c.setGender(req.gender());
-        c.setAge(req.age());
-        c.setIdentification(req.identification());
-        c.setAddress(req.address());
-        c.setPhone(req.phone());
+        return toCustomerResponse(customerRepo.save(customer));
+    }
 
-        return toResponse(repository.save(c));
+    @Override
+    @Transactional
+    public CustomerDto getById(UUID id) {
+        Customer customer = customerRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado: " + id));
+        return toCustomerDto(customer);
+    }
+
+    @Override
+    @Transactional
+    public List<CustomerDto> getAll() {
+        return customerRepo.findAll().stream().map(this::toCustomerDto).toList();
     }
 
     @Override
     public void delete(UUID id) {
-        if (!repository.existsById(id)) {
-            throw new IllegalArgumentException("Customer no encontrado");
+        if (!customerRepo.existsById(id)) {
+            throw new EntityNotFoundException("Cliente no encontrado: " + id);
         }
-        repository.deleteById(id);
+        customerRepo.deleteById(id);
     }
 
-    private CustomerResponse toResponse(Customer c) {
-        return new CustomerResponse(
-                c.getId(),
-                c.getCustomerCode(),
-                Boolean.TRUE.equals(c.getActive()),
-                c.getName(),
-                c.getGender(),
-                c.getAge(),
-                c.getIdentification(),
-                c.getAddress(),
-                c.getPhone()
-        );
+
+    private CustomerDto toCustomerDto(Customer c) {
+        CustomerDto dto = new CustomerDto();
+        dto.setId(c.getId());
+        dto.setFullName(c.getFullName());
+        dto.setIdentification(c.getIdentification());
+        dto.setAddress(c.getAddress());
+        dto.setPhone(c.getPhone());
+        dto.setStatus(c.getStatus());
+        return dto;
+    }
+
+    private CustomerResponse toCustomerResponse(Customer c) {
+        CustomerResponse r = new CustomerResponse();
+        r.setId(c.getId());
+        r.setFullName(c.getFullName());
+        r.setIdentification(c.getIdentification());
+        r.setAddress(c.getAddress());
+        r.setPhone(c.getPhone());
+        r.setStatus(c.getStatus());
+        return r;
     }
 }
+

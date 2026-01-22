@@ -1,18 +1,22 @@
 package com.bolsa.banca_backend.dto;
 
-import java.math.BigDecimal;
+import lombok.Data;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-public record ReportResponse(
-        UUID customerId,
-        String customerName,
-        LocalDate from,
-        LocalDate to,
-        List<ReportAccountDto> accounts,
-        BigDecimal totalCredit,
-        BigDecimal totalDebit,
-        String pdfBase64
-) {}
+@Data
+public class ReportResponse {
+
+    private UUID customerId;
+    private String customerFullName;
+    private String customerIdentification;
+
+    private LocalDate from;
+    private LocalDate to;
+
+    private List<ReportAccountDto> cuentas;
+    private List<ReportMovementDto> movimientos;
+}
 

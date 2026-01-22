@@ -2,6 +2,7 @@ package com.bolsa.banca_backend.test;
 
 import com.bolsa.banca_backend.controller.MovementController;
 import com.bolsa.banca_backend.dto.MovementResponse;
+import com.bolsa.banca_backend.excepciones.GlobalExceptionHandler;
 import com.bolsa.banca_backend.service.IMovementService;
 import com.bolsa.banca_backend.utils.MovementType;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,8 +19,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -39,6 +40,8 @@ class MovementControllerTest {
     void setup() {
         mockMvc = MockMvcBuilders
                 .standaloneSetup(movementController)
+
+                .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }
 
@@ -47,85 +50,59 @@ class MovementControllerTest {
         UUID movementId = UUID.randomUUID();
         UUID accountId = UUID.randomUUID();
 
-        MovementResponse response = new MovementResponse(
-                movementId,
-                accountId,
-                LocalDate.parse("2022-02-10"),
-                MovementType.CREDIT,
-                new BigDecimal("100.00"),
-                new BigDecimal("1100.00")
-        );
+        MovementResponse response = new MovementResponse();
+        response.setId(movementId);
+        response.setAccountId(accountId);
+        response.setAccountNumber("1234567890");
+        response.setType(MovementType.DEPOSIT);
+        response.setAmount(new BigDecimal("100.00"));
+        response.setBalanceBefore(new BigDecimal("1000.00"));
+        response.setBalanceAfter(new BigDecimal("1100.00"));
+        response.setMovementDate(LocalDate.parse("2022-02-10"));
 
         when(movementService.create(any())).thenReturn(response);
 
         String body = """
         {
           "accountId": "%s",
-          "movementDate": "2022-02-10",
-          "movementType": "CREDIT",
-          "amount": 100
+          "amount": 100.00,
+          "type": "DEPOSIT"
         }
         """.formatted(accountId);
 
-        mockMvc.perform(post("/movements")
+        mockMvc.perform(post("/api/movimientos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(movementId.toString()))
-                .andExpect(jsonPath("$.movementType").value("CREDIT"))
-                .andExpect(jsonPath("$.availableBalance").value(1100.00));
+                .andExpect(jsonPath("$.accountId").value(accountId.toString()))
+                .andExpect(jsonPath("$.accountNumber").value("1234567890"))
+                .andExpect(jsonPath("$.type").value("DEPOSIT"))
+                // BigDecimal en JSON puede venir como 1100 o 1100.00, por eso usamos número:
+                .andExpect(jsonPath("$.balanceAfter").value(1100.00));
+
+        verify(movementService).create(any());
     }
 
     @Test
-    void shouldThrowWhenInsufficientFunds() {
+    void shouldReturnErrorWhenInsufficientFunds() throws Exception {
         when(movementService.create(any()))
-                .thenThrow(new IllegalArgumentException("Insufficient funds"));
+                .thenThrow(new IllegalArgumentException("Saldo no disponible"));
 
         String body = """
         {
           "accountId": "11111111-1111-1111-1111-111111111111",
-          "movementDate": "2022-02-10",
-          "movementType": "DEBIT",
-          "amount": 500
+          "amount": 500.00,
+          "type": "WITHDRAWAL"
         }
         """;
 
-        Exception ex = assertThrows(Exception.class, () ->
-                mockMvc.perform(post("/movements")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(body))
-                        .andReturn()
-        );
+        mockMvc.perform(post("/api/movimientos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Saldo no disponible"));
 
-        // Spring wraps it as ServletException, the cause contains the real exception
-        Throwable root = (ex.getCause() != null) ? ex.getCause() : ex;
-        assertTrue(root instanceof IllegalArgumentException);
-        assertEquals("Insufficient funds", root.getMessage());
-    }
-
-    @Test
-    void shouldThrowWhenDailyLimitExceeded() {
-        when(movementService.create(any()))
-                .thenThrow(new IllegalArgumentException("Daily limit exceeded"));
-
-        String body = """
-        {
-          "accountId": "11111111-1111-1111-1111-111111111111",
-          "movementDate": "2022-02-10",
-          "movementType": "DEBIT",
-          "amount": 900
-        }
-        """;
-
-        Exception ex = assertThrows(Exception.class, () ->
-                mockMvc.perform(post("/movements")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(body))
-                        .andReturn()
-        );
-
-        Throwable root = (ex.getCause() != null) ? ex.getCause() : ex;
-        assertTrue(root instanceof IllegalArgumentException);
-        assertEquals("Daily limit exceeded", root.getMessage());
+        verify(movementService).create(any());
     }
 }

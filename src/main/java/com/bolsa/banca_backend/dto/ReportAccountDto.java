@@ -1,10 +1,15 @@
 package com.bolsa.banca_backend.dto;
-import java.math.BigDecimal;
-import java.util.UUID;
+import com.bolsa.banca_backend.utils.AccountType;
+import lombok.Data;
 
-public record ReportAccountDto(
-        UUID accountId,
-        String accountNumber,
-        String accountType,
-        BigDecimal currentBalance
-) {}
+import java.math.BigDecimal;
+
+
+
+
+@Data
+public class ReportAccountDto {
+    private String accountNumber;
+    private AccountType type;
+    private BigDecimal balance;
+}

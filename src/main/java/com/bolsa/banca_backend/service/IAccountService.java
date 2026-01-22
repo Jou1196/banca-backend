@@ -1,6 +1,8 @@
 package com.bolsa.banca_backend.service;
 
 import com.bolsa.banca_backend.dto.AccountCreateRequest;
+import com.bolsa.banca_backend.dto.AccountDetailDto;
+import com.bolsa.banca_backend.dto.AccountDto;
 import com.bolsa.banca_backend.dto.AccountResponse;
 
 
@@ -12,8 +14,8 @@ import java.util.UUID;
  */
 public interface IAccountService {
     AccountResponse create(AccountCreateRequest req);
-    List<AccountResponse> findAll();
-    List<AccountResponse> findByCustomerId(UUID customerId);
-    AccountResponse findById(UUID id);
+    AccountDetailDto getById(UUID id);
+    List<AccountDto> getAll();
+    List<AccountDto> getByCustomer(UUID customerId);
     void delete(UUID id);
 }

@@ -1,34 +1,20 @@
 package com.bolsa.banca_backend.dto;
 
-import lombok.AllArgsConstructor;
+
+import com.bolsa.banca_backend.utils.AccountType;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.time.LocalDateTime;
-
+import java.math.BigDecimal;
+import java.util.UUID;
 
 @Data
-@AllArgsConstructor
-@Getter
-@Setter
-/**
- * Class AccountDetailDto
- */
 public class AccountDetailDto {
-    private Long customerId;
-    private String fullName;
-    private String address;
-    private String phone;
+    private UUID id;
+    private String accountNumber;
+    private AccountType type;
+    private BigDecimal balance;
+    private Boolean status;
 
-    private Long accountId;
-    private String accountType;
-    private Double balance;
-
-    private Long transactionId;
-    private String transactionType;
-    private Double amount;
-    private Double initialBalance;
-    private Double availableBalance;
-    private LocalDateTime transactionDate;
+    private UUID customerId;
+    private String customerFullName;
+    private String customerIdentification;
 }
