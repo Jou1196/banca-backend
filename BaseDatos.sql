@@ -2,13 +2,10 @@
 -- BANCA BACKEND - PostgreSQL Schema (Customers, Accounts, Movements, Outbox)
 -- ==========================================================
 
--- 1) Extensión para UUID (gen_random_uuid)
+
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- ==========================================================
--- 2) ENUMs (opcional, recomendado)
---    Si en tu JPA usas @Enumerated(EnumType.STRING), esto es ideal.
--- ==========================================================
+
 
 DO $$
 BEGIN
@@ -40,7 +37,7 @@ CREATE TABLE IF NOT EXISTS customers (
   updated_at         TIMESTAMP
 );
 
--- Evitar duplicados de cédula/identificación
+
 CREATE UNIQUE INDEX IF NOT EXISTS ux_customers_identification
   ON customers (identification);
 
@@ -103,7 +100,7 @@ CREATE INDEX IF NOT EXISTS ix_movements_account_id
 CREATE INDEX IF NOT EXISTS ix_movements_movement_date
   ON movements (movement_date);
 
--- Útil para reportes por cliente + rango (vía join account->customer)
+
 CREATE INDEX IF NOT EXISTS ix_accounts_customer_account
   ON accounts (customer_id, id);
 
@@ -112,9 +109,9 @@ CREATE INDEX IF NOT EXISTS ix_accounts_customer_account
 -- ==========================================================
 CREATE TABLE IF NOT EXISTS outbox_event (
   id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  aggregate_type VARCHAR(80)  NOT NULL,              -- ej: "MOVEMENT"
-  aggregate_id   UUID         NOT NULL,              -- ej: movementId
-  event_type     VARCHAR(120) NOT NULL,              -- ej: "MovementCreated"
+  aggregate_type VARCHAR(80)  NOT NULL,              
+  aggregate_id   UUID         NOT NULL,              
+  event_type     VARCHAR(120) NOT NULL,              
   payload        JSONB        NOT NULL,
   status         outbox_status NOT NULL DEFAULT 'PENDING',
   attempts       INT NOT NULL DEFAULT 0,
@@ -123,15 +120,12 @@ CREATE TABLE IF NOT EXISTS outbox_event (
   processed_at   TIMESTAMP
 );
 
--- Para que el scheduler encuentre rápido los pendientes
+
 CREATE INDEX IF NOT EXISTS ix_outbox_status_created
   ON outbox_event (status, created_at);
 
--- Para deduplicación opcional (depende tu lógica):
--- Evita publicar dos veces el mismo evento si se repite aggregate_id + event_type
+
 CREATE UNIQUE INDEX IF NOT EXISTS ux_outbox_aggregate_event
   ON outbox_event (aggregate_type, aggregate_id, event_type);
 
--- ==========================================================
--- FIN
--- ==========================================================
+
