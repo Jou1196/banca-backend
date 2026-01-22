@@ -78,7 +78,7 @@ class MovementControllerTest {
                 .andExpect(jsonPath("$.accountId").value(accountId.toString()))
                 .andExpect(jsonPath("$.accountNumber").value("1234567890"))
                 .andExpect(jsonPath("$.type").value("DEPOSIT"))
-                // BigDecimal en JSON puede venir como 1100 o 1100.00, por eso usamos número:
+
                 .andExpect(jsonPath("$.balanceAfter").value(1100.00));
 
         verify(movementService).create(any());

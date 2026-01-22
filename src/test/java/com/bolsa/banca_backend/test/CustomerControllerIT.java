@@ -19,7 +19,7 @@ class CustomerControllerIT extends IntegrationTestBase {
     @Test
     void customer_crud_flow_shouldWork() throws Exception {
 
-        // 1) CREATE
+
         String createBody = """
         {
           "fullName": "Jose Lema",
@@ -43,13 +43,13 @@ class CustomerControllerIT extends IntegrationTestBase {
 
         String customerId = objectMapper.readTree(createResponse).get("id").asText();
 
-        // 2) GET BY ID
+
         mockMvc.perform(get("/api/clientes/{id}", customerId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(customerId))
                 .andExpect(jsonPath("$.fullName").value("Jose Lema"));
 
-        // 3) UPDATE
+
         String updateBody = """
         {
           "fullName": "Jose Lema Actualizado",
@@ -69,18 +69,18 @@ class CustomerControllerIT extends IntegrationTestBase {
                 .andExpect(jsonPath("$.fullName").value("Jose Lema Actualizado"))
                 .andExpect(jsonPath("$.status").value(false));
 
-        // 4) GET ALL
+
         mockMvc.perform(get("/api/clientes"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", isA(java.util.List.class)))
                 .andExpect(jsonPath("$", not(empty())))
                 .andExpect(jsonPath("$[0].id", notNullValue()));
 
-        // 5) DELETE
+
         mockMvc.perform(delete("/api/clientes/{id}", customerId))
                 .andExpect(status().isNoContent());
 
-        // 6) GET BY ID (ya no existe) => 404 o lo que tengas en tu handler
+
         mockMvc.perform(get("/api/clientes/{id}", customerId))
                 .andExpect(status().is4xxClientError());
     }

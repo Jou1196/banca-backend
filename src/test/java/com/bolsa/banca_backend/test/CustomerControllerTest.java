@@ -45,8 +45,7 @@ class CustomerControllerTest {
 
         UUID id = UUID.randomUUID();
 
-        // Ajusta este constructor/setters EXACTO a tu CustomerResponse real.
-        // Si tu CustomerResponse tiene Lombok @Data, puedes usar setters.
+
         CustomerResponse response = new CustomerResponse();
         response.setId(id);
         response.setFullName("Jose Lema");
