@@ -27,12 +27,7 @@ public class Movement {
     @JoinColumn(name = "account_id", nullable = false)
     private Account account;
 
-    /**
-     * amount SIEMPRE positivo.
-     * El signo real depende de type:
-     *  - DEPOSIT => suma
-     *  - WITHDRAWAL => resta
-     */
+
     @Column(name = "amount", nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
@@ -40,7 +35,7 @@ public class Movement {
     @Column(name = "type", nullable = false, length = 20)
     private MovementType type;
 
-    // Guardamos ambos para reporte "Saldo Inicial" y "Saldo Disponible"
+
     @Column(name = "balance_before", nullable = false, precision = 19, scale = 2)
     private BigDecimal balanceBefore;
 
