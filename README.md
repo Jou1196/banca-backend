@@ -1,97 +1,97 @@
-# 🧠 Banca Backend – Spring Boot
+# 🏦 Banca Backend – Spring Boot
 
-Backend del sistema de banca encargado de la gestión de clientes, cuentas, movimientos y generación de reportes en PDF.  
-Expone APIs REST documentadas con Swagger/OpenAPI y es consumido por el frontend Angular.
+Backend del sistema de banca encargado de la gestión de clientes, cuentas y movimientos. Expone APIs REST consumidas desde Postman o frontend y está preparado para ejecución local y dockerizada con PostgreSQL.
 
 ## 🚀 Tecnologías
-Java 17 · Spring Boot 3 · Spring Web · Spring Data JPA · Lombok  
-OpenAPI / Swagger · iText / PDF · Docker · Maven
+Java 21 · Spring Boot 3.4 · Spring Web · Spring Data JPA · Lombok · PostgreSQL · Maven 3.9+ · Docker · Docker Compose
 
 ## 📁 Estructura
 banca-backend/
-src/main/java/com/bolsa/banca_backend
-├── controller
-├── service
-├── repository
-├── dto
-├── entity
-└── config
+├── src/main/java/com/bolsa/banca_backend
+│   ├── controller
+│   ├── service
+│   ├── repository
+│   ├── dto
+│   ├── entity
+│   └── config
+├── src/main/resources
+│   └── application.properties
+├── db/init/01_BaseDatos.sql
+├── Dockerfile
+├── docker-compose.yml
+├── deploy.sh
+├── pom.xml
+└── README.md
+
+## 🗄️ Base de Datos
+Motor: PostgreSQL  
+Base de datos: banca_db  
+Usuario: postgres  
+Password: 1234  
+Puerto: 5432  
+
 
 ## ▶️ Requisitos
-Java 17  
+Java 21  
 Maven 3.9+  
-Docker (opcional)
+Docker y Docker Compose  
 
 ## ▶️ Ejecución local
 mvn clean install  
-mvn spring-boot:run
+mvn spring-boot:run  
 
-Aplicación:
-http://localhost:8080
+URL: http://localhost:8080
 
-## 📘 Swagger / OpenAPI
-Documentación automática de las APIs:
+## 🐳 Ejecución con Docker
+docker build -t banca-backend:1.0 .  
+docker compose up -d  
+docker compose logs -f banca-backend  
+docker compose down  
 
-http://localhost:8080/swagger-ui.html  
-o  
-http://localhost:8080/swagger-ui/index.html
+## ❤️ Healthcheck
+PostgreSQL incluye healthcheck y el backend espera a que la base esté lista antes de arrancar.
 
-## 🔗 Endpoints principales
+## 🔗 Endpoints
+GET    /api/clientes  
+POST   /api/clientes  
+GET    /api/clientes/{id}  
+PUT    /api/clientes/{id}  
+DELETE /api/clientes/{id}  
 
-### Customers
-GET /customers  
-Obtiene el listado de clientes.
+GET /api/cuentas?clienteId={uuid}  
 
-### Accounts
-GET /accounts?customerId={uuid}  
-Obtiene las cuentas de un cliente.
+POST /api/movimientos/deposito  
+POST /api/movimientos/retiro  
+GET  /api/movimientos  
 
-### Movements
-GET /movements?accountId={uuid}  
-Obtiene los movimientos de una cuenta.
+## 🧪 Postman
+Variable:
+baseUrl = http://localhost:8080  
 
-### Reports
-GET /reports?customerId={uuid}&from=yyyy-MM-dd&to=yyyy-MM-dd  
-Genera el reporte de un cliente en un rango de fechas.
+Ejemplo:
+GET {{baseUrl}}/api/clientes  
 
-## 📄 Reportes PDF
-El backend genera reportes PDF con:
-- Datos del cliente
-- Cuentas asociadas
-- Movimientos por rango de fechas
-- Totales y formato legible
-
-El frontend descarga el PDF directamente.
-
-## 🧪 Manejo de errores
-Respuestas consistentes con:
-- 400: parámetros inválidos
-- 404: cliente / datos no encontrados
-- 500: error interno
-
-## 🐳 Docker
-
-### Dockerfile
-FROM eclipse-temurin:17-jdk-alpine  
-WORKDIR /app  
-COPY target/*.jar app.jar  
-EXPOSE 8080  
-ENTRYPOINT ["java","-jar","/app/app.jar"]
-
-### Build
-mvn clean package  
-docker build -t banca-backend .
-
-### Run
-docker run -p 8080:8080 banca-backend
+## 🧠 Manejo de errores
+400 parámetros inválidos  
+404 recurso no encontrado  
+500 error interno  
 
 ## 🔐 CORS
-Configurado para permitir consumo desde:
-http://localhost:4200
+Permitido desde http://localhost:4200
+
+## 🚀 Deploy automático
+Archivo deploy.sh:
+
+#!/bin/bash
+set -e
+docker compose down -v || true
+docker build -t banca-backend:1.0 .
+docker compose up -d
+docker ps
+docker compose logs -f banca-backend
 
 ## ✅ Estado
-Backend funcional, APIs documentadas con Swagger, generación de PDFs operativa, integración completa con frontend Angular.
+Backend funcional, Dockerizado, PostgreSQL integrada, base inicializada automáticamente y endpoints probados.
 
 ## 👨‍💻 Autor
-Banca Backend – Spring Boot  
-Sistema de Banca
+Joseph Arias
