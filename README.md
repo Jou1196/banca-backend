@@ -1,97 +1,354 @@
-# 🏦 Banca Backend – Spring Boot
+# 🏦 Banca Backend – Arquitectura de Microservicios con Spring Boot
 
-Backend del sistema de banca encargado de la gestión de clientes, cuentas y movimientos. Expone APIs REST consumidas desde Postman o frontend y está preparado para ejecución local y dockerizada con PostgreSQL.
+Backend del sistema de banca desarrollado con **Spring Boot** bajo una arquitectura basada en **microservicios**.  
+El sistema permite gestionar **clientes, cuentas, movimientos y reportes de estado de cuenta** mediante APIs REST.
 
-## 🚀 Tecnologías
-Java 21 · Spring Boot 3.4 · Spring Web · Spring Data JPA · Lombok · PostgreSQL · Maven 3.9+ · Docker · Docker Compose
+Cada microservicio funciona de forma **independiente**, se ejecuta en **contenedores Docker**, comparte una base de datos **PostgreSQL** y se comunica con otros servicios utilizando **Feign Clients**.
 
-## 📁 Estructura
-banca-backend/
-├── src/main/java/com/bolsa/banca_backend
+El backend es consumido por el **frontend Angular CRM**.
+
+---
+
+# 🏗️ Arquitectura del Sistema
+
+El sistema está dividido en los siguientes microservicios:
+
+| Servicio | Puerto | Descripción |
+|--------|--------|-------------|
+| customer-service | 8081 | Gestión de clientes |
+| account-service | 8082 | Gestión de cuentas |
+| movement-service | 8083 | Gestión de movimientos |
+| report-service | 8084 | Generación de reportes de estado de cuenta |
+
+Todos los servicios se ejecutan mediante **Docker Compose** dentro de una misma red.
+
+---
+
+# 🔗 Comunicación entre Microservicios
+
+Los microservicios se comunican entre sí mediante **Spring Cloud OpenFeign**.
+
+Ejemplo de flujo para generar un reporte:
+
+```
+Frontend Angular
+        │
+        ▼
+report-service
+        │
+        ├── consulta cuentas → account-service
+        │
+        ├── consulta cliente → customer-service
+        │
+        └── consulta movimientos → movement-service
+```
+
+Ejemplo de llamada interna:
+
+```
+http://movement-service:8083/api/movements/account/{accountId}?from=yyyy-MM-dd&to=yyyy-MM-dd
+```
+
+Docker resuelve automáticamente el nombre del servicio dentro de la red interna.
+
+---
+
+# 🚀 Tecnologías
+
+- Java 21
+- Spring Boot 3
+- Spring Web
+- Spring Data JPA
+- OpenFeign
+- Lombok
+- PostgreSQL
+- Maven
+- Docker
+- Docker Compose
+- Swagger (Springdoc OpenAPI)
+
+---
+
+# 📁 Estructura del Proyecto
+
+```
+banca-backend
+│
+├── customer-service
 │   ├── controller
 │   ├── service
 │   ├── repository
-│   ├── dto
 │   ├── entity
-│   └── config
-├── src/main/resources
-│   └── application.properties
-├── db/init/01_BaseDatos.sql
-├── Dockerfile
+│   └── dto
+│
+├── account-service
+│   ├── controller
+│   ├── service
+│   ├── repository
+│   ├── entity
+│   └── dto
+│
+├── movement-service
+│   ├── controller
+│   ├── service
+│   ├── repository
+│   ├── entity
+│   └── dto
+│
+├── report-service
+│   ├── controller
+│   ├── service
+│   ├── client (Feign)
+│   └── dto
+│
 ├── docker-compose.yml
-├── deploy.sh
-├── pom.xml
+├── Dockerfile
 └── README.md
+```
 
-## 🗄️ Base de Datos
-Motor: PostgreSQL  
-Base de datos: banca_db  
-Usuario: postgres  
-Password: 1234  
-Puerto: 5432  
+Cada microservicio es una aplicación **Spring Boot independiente**.
 
+---
 
-## ▶️ Requisitos
-Java 21  
-Maven 3.9+  
-Docker y Docker Compose  
+# 🗄️ Base de Datos
 
-## ▶️ Ejecución local
-mvn clean install  
-mvn spring-boot:run  
+Motor: **PostgreSQL**
 
-URL: http://localhost:8080
+Configuración:
 
-## 🐳 Ejecución con Docker
-docker build -t banca-backend:1.0 .  
-docker compose up -d  
-docker compose logs -f banca-backend  
-docker compose down  
+```
+Database: banca_db
+User: postgres
+Password: 1234
+Port: 5432
+```
 
-## ❤️ Healthcheck
-PostgreSQL incluye healthcheck y el backend espera a que la base esté lista antes de arrancar.
+La base de datos se ejecuta dentro de un contenedor Docker.
 
-## 🔗 Endpoints
-GET    /api/clientes  
-POST   /api/clientes  
-GET    /api/clientes/{id}  
-PUT    /api/clientes/{id}  
-DELETE /api/clientes/{id}  
+Todos los microservicios se conectan a la misma base de datos.
 
-GET /api/cuentas?clienteId={uuid}  
+---
 
-POST /api/movimientos/deposito  
-POST /api/movimientos/retiro  
-GET  /api/movimientos  
+# ▶️ Requisitos
 
-## 🧪 Postman
-Variable:
-baseUrl = http://localhost:8080  
+Para ejecutar el sistema se requiere:
+
+- Java 21
+- Maven
+- Docker
+- Docker Compose
+
+---
+
+# ▶️ Ejecución Local (sin Docker)
+
+Cada microservicio puede ejecutarse de forma independiente.
 
 Ejemplo:
-GET {{baseUrl}}/api/clientes  
 
-## 🧠 Manejo de errores
-400 parámetros inválidos  
-404 recurso no encontrado  
-500 error interno  
+```
+mvn clean install
+mvn spring-boot:run
+```
 
-## 🔐 CORS
-Permitido desde http://localhost:4200
+Puertos utilizados:
 
-## 🚀 Deploy automático
-Archivo deploy.sh:
+```
+customer-service  → 8081
+account-service   → 8082
+movement-service  → 8083
+report-service    → 8084
+```
 
-#!/bin/bash
-set -e
-docker compose down -v || true
-docker build -t banca-backend:1.0 .
-docker compose up -d
+---
+
+# 🐳 Ejecución con Docker
+
+Para levantar toda la arquitectura:
+
+```
+docker compose up --build -d
+```
+
+Ver contenedores en ejecución:
+
+```
 docker ps
-docker compose logs -f banca-backend
+```
 
-## ✅ Estado
-Backend funcional, Dockerizado, PostgreSQL integrada, base inicializada automáticamente y endpoints probados.
+Ver logs:
 
-## 👨‍💻 Autor
-Joseph Arias
+```
+docker compose logs -f
+```
+
+Detener los servicios:
+
+```
+docker compose down
+```
+
+---
+
+# 📘 Documentación de APIs – Swagger
+
+Cada microservicio incluye **Swagger UI** mediante **Springdoc OpenAPI**, lo que permite:
+
+- Visualizar todos los endpoints disponibles
+- Ver los parámetros de cada API
+- Ejecutar las peticiones directamente desde el navegador
+- Analizar las respuestas de cada servicio
+
+Swagger facilita el proceso de **pruebas y documentación de las APIs**.
+
+### URLs de Swagger
+
+```
+Customer Service
+http://localhost:8081/swagger-ui/index.html
+
+Account Service
+http://localhost:8082/swagger-ui/index.html
+
+Movement Service
+http://localhost:8083/swagger-ui/index.html
+
+Report Service
+http://localhost:8084/swagger-ui/index.html
+```
+
+También es posible acceder a la especificación OpenAPI en formato JSON:
+
+```
+http://localhost:8081/v3/api-docs
+http://localhost:8082/v3/api-docs
+http://localhost:8083/v3/api-docs
+http://localhost:8084/v3/api-docs
+```
+
+Esto permite integraciones con herramientas externas como **Postman, Swagger Editor o herramientas de testing**.
+
+---
+
+# 🔗 Principales Endpoints
+
+## Customer Service
+
+```
+GET    /api/customers
+GET    /api/customers/{id}
+POST   /api/customers
+DELETE /api/customers/{id}
+```
+
+---
+
+## Account Service
+
+```
+GET    /api/accounts
+GET    /api/accounts/{id}
+GET    /api/accounts/por-cliente/{customerId}
+POST   /api/accounts
+DELETE /api/accounts/{id}
+```
+
+---
+
+## Movement Service
+
+```
+GET  /api/movements
+GET  /api/movements/account/{accountId}
+POST /api/movements/deposit
+POST /api/movements/withdraw
+```
+
+---
+
+## Report Service
+
+Genera el estado de cuenta de un cliente consultando múltiples microservicios.
+
+```
+GET /api/reportes/estado-cuenta?customerId={uuid}&from=yyyy-MM-dd&to=yyyy-MM-dd
+```
+
+Proceso:
+
+1. Obtiene las cuentas del cliente desde **account-service**
+2. Obtiene la información del cliente desde **customer-service**
+3. Consulta los movimientos desde **movement-service**
+4. Genera el estado de cuenta consolidado
+
+---
+
+# 🧠 Manejo de Errores
+
+El sistema maneja errores estándar HTTP:
+
+```
+400 → Parámetros inválidos
+404 → Recurso no encontrado
+500 → Error interno del servidor
+```
+
+Las validaciones se realizan mediante **Jakarta Validation**.
+
+---
+
+# 🔐 CORS
+
+Los microservicios permiten acceso desde el frontend Angular.
+
+```
+http://localhost:4200
+```
+
+---
+
+# 🧪 Pruebas
+
+Las APIs pueden probarse con:
+
+- Swagger UI
+- Postman
+- Curl
+
+Ejemplo:
+
+```
+GET http://localhost:8084/api/reportes/estado-cuenta?customerId={uuid}&from=2026-03-01&to=2026-03-05
+```
+
+---
+
+# ⚙️ Infraestructura Docker
+
+Docker Compose levanta los siguientes contenedores:
+
+- PostgreSQL
+- customer-service
+- account-service
+- movement-service
+- report-service
+
+Todos los servicios comparten una red interna Docker.
+
+---
+
+# ✅ Estado del Proyecto
+
+✔ Arquitectura basada en microservicios  
+✔ Comunicación entre servicios con Feign  
+✔ PostgreSQL integrado  
+✔ Docker Compose para despliegue completo  
+✔ APIs documentadas con Swagger  
+✔ Integración con frontend Angular CRM  
+
+---
+
+# 👨‍💻 Autor
+
+Joseph Arias  
+Sistema de Banca – Backend
