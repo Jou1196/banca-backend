@@ -1,4 +1,4 @@
-version: "3.9"
+
 
 services:
   postgres:
@@ -19,22 +19,75 @@ services:
       retries: 5
       start_period: 10s
 
-  banca-backend:
-    image: banca-backend:1.0
-    container_name: banca-backend
+  customer-service:
+    build: ./customer-service
+    container_name: customer-service
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      SPRING_APPLICATION_NAME: banca-backend
+      SERVER_PORT: "8081"
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/banca_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: "1234"
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_JPA_SHOW_SQL: "true"
-      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
     ports:
-      - "8080:8080"
+      - "8081:8081"
+
+  account-service:
+    build: ./account-service
+    container_name: account-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: "8082"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/banca_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: "1234"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8082:8082"
+
+  movement-service:
+    build: ./movement-service
+    container_name: movement-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      account-service:
+        condition: service_started
+    environment:
+      SERVER_PORT: "8083"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/banca_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: "1234"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+
+      ACCOUNT_SERVICE_URL: http://account-service:8082
+    ports:
+      - "8083:8083"
+
+  report-service:
+    build: ./report-service
+    container_name: report-service
+    depends_on:
+      customer-service:
+        condition: service_started
+      account-service:
+        condition: service_started
+      movement-service:
+        condition: service_started
+    environment:
+      SERVER_PORT: "8084"
+
+      # Feign URLs (hostname docker)
+      services.customer.url: http://customer-service:8081
+      services.account.url: http://account-service:8082
+      services.movement.url: http://movement-service:8083
+    ports:
+      - "8084:8084"
 
 volumes:
   pgdata:
